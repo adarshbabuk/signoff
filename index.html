@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signing Off</title>
+<style>
+  :root{
+    --bg: #0b0e14;
+    --bg-alt: #11151f;
+    --card: #161b26;
+    --text: #e8ecf4;
+    --muted: #8b93a7;
+    --accent: #7dd3c0;
+    --accent-2: #b8a4ff;
+    --accent-3: #ff9ecb;
+    --border: rgba(255,255,255,0.08);
+  }
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    cursor: default;
+    overflow-x: hidden;
+    transition: background 0.4s ease, color 0.4s ease;
+  }
+
+  ::selection{ background: var(--accent); color: #08110f; }
+
+  .container{
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+  }
+
+  /* intro curtain (pure-CSS, works with JS disabled) */
+  .intro-curtain{
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: curtainOut 0.7s ease forwards;
+    animation-delay: 2.1s;
+  }
+  .intro-text{
+    font-size: clamp(1.8rem, 6vw, 3.2rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    display: flex;
+  }
+  .il{
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(16px);
+    animation: letterIn 0.5s cubic-bezier(.2,.8,.2,1) forwards;
+    animation-delay: calc(var(--i) * 0.06s);
+  }
+  @keyframes letterIn{ to{ opacity: 1; transform: translateY(0); } }
+  @keyframes curtainOut{
+    0%{ opacity: 1; transform: translateY(0); }
+    100%{ opacity: 0; transform: translateY(-4%); visibility: hidden; pointer-events: none; }
+  }
+
+  /* progress bar */
+  .progress-bar{
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+    z-index: 100;
+    transition: width 0.1s ease-out;
+  }
+
+  /* living aurora background */
+  #aurora{
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    filter: blur(70px);
+    opacity: 0.55;
+  }
+
+  /* cursor glow */
+  .glow{
+    position: fixed;
+    width: 380px;
+    height: 380px;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--accent) 18%, transparent) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s ease;
+    opacity: 0;
+  }
+
+  header.hero{
+    min-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+    z-index: 2;
+  }
+  .eyebrow{
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 18px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .eyebrow::before{
+    content: "";
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 50%, transparent); }
+    70%{ box-shadow: 0 0 0 10px transparent; }
+    100%{ box-shadow: 0 0 0 0 transparent; }
+  }
+  h1.title{
+    font-size: clamp(2.6rem, 7vw, 4.6rem);
+    line-height: 1.05;
+    margin: 0 0 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.1s forwards;
+  }
+  h1.title span{
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3), var(--accent));
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 6s linear infinite;
+  }
+  @keyframes shimmer{
+    to{ background-position: -300% center; }
+  }
+  .subtitle{
+    font-size: clamp(1rem, 2.2vw, 1.25rem);
+    color: var(--muted);
+    max-width: 520px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.2s forwards;
+  }
+  .scroll-cue{
+    margin-top: 56px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.35s forwards;
+  }
+  .scroll-cue .arrow{
+    display: inline-block;
+    animation: bob 1.6s ease-in-out infinite;
+  }
+
+  @keyframes fadeUp{
+    from{ opacity: 0; transform: translateY(14px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+  @keyframes bob{
+    0%, 100%{ transform: translateY(0); }
+    50%{ transform: translateY(5px); }
+  }
+
+  section{
+    padding: 90px 0;
+    border-top: 1px solid var(--border);
+    position: relative;
+    z-index: 2;
+  }
+
+  .reveal{
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s cubic-bezier(.2,.7,.3,1), transform 0.7s cubic-bezier(.2,.7,.3,1);
+  }
+  .reveal.in-view{
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-delay-1{ transition-delay: 0.08s; }
+  .reveal-delay-2{ transition-delay: 0.16s; }
+  .reveal-delay-3{ transition-delay: 0.24s; }
+  .reveal-delay-4{ transition-delay: 0.32s; }
+
+  /* scroll-choreographed heading words */
+  .word{
+    display: inline-block;
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(14px);
+    transition: opacity 0.6s ease, filter 0.6s ease, transform 0.6s ease;
+    transition-delay: calc(var(--i, 0) * 0.05s);
+  }
+  h2.in-view .word{
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+
+  .kicker{
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  h2{
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    margin: 0 0 24px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  p{
+    color: var(--text);
+    font-size: 1.05rem;
+    margin: 0 0 18px;
+  }
+  p.lead{
+    color: var(--muted);
+    font-size: 1.1rem;
+  }
+
+  .timeline{
+    margin-top: 40px;
+    position: relative;
+    display: grid;
+    gap: 28px;
+  }
+  .timeline::before{
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--accent), var(--accent-2), var(--accent-3));
+    opacity: 0.35;
+  }
+  .timeline-item{
+    position: relative;
+    padding-left: 40px;
+    transition: transform 0.15s ease-out;
+    transform-style: preserve-3d;
+  }
+  .timeline-item .dot{
+    position: absolute;
+    left: 2px;
+    top: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--accent);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+  }
+  .timeline-item:hover .dot{
+    transform: scale(1.25);
+    border-color: var(--accent-3);
+  }
+  .timeline-item h3{
+    margin: 0 0 6px;
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+  .timeline-item p{
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.98rem;
+  }
+
+  .quote-card{
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px 14px 14px 4px;
+    padding: 28px 30px;
+    margin-top: 30px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s ease, transform 0.15s ease-out;
+    transform-style: preserve-3d;
+  }
+  .quote-card::before{
+    content: "\201C";
+    position: absolute;
+    top: -30px;
+    left: 6px;
+    font-size: 7rem;
+    font-family: Georgia, serif;
+    color: var(--accent);
+    opacity: 0.12;
+    line-height: 1;
+  }
+  .quote-card:hover{ border-left-color: var(--accent-3); }
+  .quote-card p{
+    font-style: italic;
+    color: var(--text);
+    margin: 0;
+    font-size: 1.1rem;
+    position: relative;
+  }
+
+  .checklist{
+    list-style: none;
+    padding: 0;
+    margin: 30px 0 0;
+    display: grid;
+    gap: 12px;
+  }
+  .checklist li{
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    color: var(--muted);
+    font-size: 0.98rem;
+    transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+  }
+  .checklist li:hover{
+    transform: translateX(6px);
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--card) 85%, var(--accent) 5%);
+  }
+  .checklist li::before{
+    content: "✓";
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #08110f;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .connect{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 30px;
+  }
+  .connect a{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 26px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    overflow: hidden;
+    isolation: isolate;
+    transform: translate(var(--mx, 0px), var(--my, 0px));
+    transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+  .connect a::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, var(--accent), var(--accent-2));
+    transform: translateX(-100%);
+    transition: transform 0.35s ease;
+    z-index: -1;
+  }
+  .connect a:hover{
+    transform: translate(var(--mx, 0px), var(--my, 0px)) translateY(-3px) scale(1.03);
+    border-color: transparent;
+    color: #08110f;
+  }
+  .connect a:hover::before{
+    transform: translateX(0);
+  }
+
+  footer{
+    padding: 60px 0 80px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    position: relative;
+    z-index: 2;
+  }
+  footer .signoff{
+    font-size: 1.4rem;
+    color: var(--text);
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  footer .signoff .wave{
+    display: inline-block;
+    animation: wave 2.4s ease-in-out infinite;
+    transform-origin: 70% 70%;
+  }
+  @keyframes wave{
+    0%, 60%, 100%{ transform: rotate(0deg); }
+    10%{ transform: rotate(14deg); }
+    20%{ transform: rotate(-8deg); }
+    30%{ transform: rotate(14deg); }
+    40%{ transform: rotate(-4deg); }
+    50%{ transform: rotate(10deg); }
+  }
+
+  /* side progress dots */
+  .dots-nav{
+    position: fixed;
+    right: 26px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    z-index: 90;
+  }
+  .dots-nav a{
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--border);
+    display: block;
+    transition: background 0.3s ease, transform 0.3s ease;
+  }
+  .dots-nav a.active{
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    transform: scale(1.4);
+  }
+  @media (max-width: 860px){
+    .dots-nav{ display: none; }
+  }
+
+  /* floating particles */
+  .particles{
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .particle{
+    position: absolute;
+    bottom: -20px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.35;
+    animation: floatUp linear infinite;
+  }
+  @keyframes floatUp{
+    0%{ transform: translateY(0) translateX(0); opacity: 0; }
+    10%{ opacity: 0.4; }
+    90%{ opacity: 0.25; }
+    100%{ transform: translateY(-100vh) translateX(30px); opacity: 0; }
+  }
+
+  /* back to top */
+  .to-top{
+    position: fixed;
+    right: 26px;
+    bottom: 26px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+  }
+  .to-top.visible{
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  .to-top:hover{
+    border-color: var(--accent);
+    transform: translateY(-3px);
+  }
+
+  @media (max-width: 560px){
+    section{ padding: 64px 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+    .intro-curtain{ display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="intro-curtain" id="introCurtain" aria-hidden="true">
+  <div class="intro-text">
+    <span class="il" style="--i:0">S</span><span class="il" style="--i:1">i</span><span class="il" style="--i:2">g</span><span class="il" style="--i:3">n</span><span class="il" style="--i:4">i</span><span class="il" style="--i:5">n</span><span class="il" style="--i:6">g</span><span class="il" style="--i:7">&nbsp;</span><span class="il" style="--i:8">O</span><span class="il" style="--i:9">f</span><span class="il" style="--i:10">f</span>
+  </div>
+</div>
+
+<div class="progress-bar" id="progressBar"></div>
+<canvas id="aurora" aria-hidden="true"></canvas>
+<div class="glow" id="cursorGlow"></div>
+
+<nav class="dots-nav" id="dotsNav">
+  <a href="#hero" class="active" aria-label="Hero"></a>
+  <a href="#looking-back" aria-label="Looking back"></a>
+  <a href="#gratitude" aria-label="Gratitude"></a>
+  <a href="#handover" aria-label="Handover"></a>
+  <a href="#connect" aria-label="Connect"></a>
+</nav>
+
+<header class="hero" id="hero">
+  <div class="particles" id="particles"></div>
+  <div class="container">
+    <div class="eyebrow">A note before I go</div>
+    <h1 class="title">Signing <span>Off</span>.</h1>
+    <p class="subtitle">
+      After a meaningful stretch of learning, building, and growing alongside great people,
+      it's time for me to turn the page and begin a new chapter.
+    </p>
+    <div class="scroll-cue">
+      <span class="arrow">↓</span> keep scrolling
+    </div>
+  </div>
+</header>
+
+<section id="looking-back">
+  <div class="container">
+    <div class="kicker reveal">Looking back</div>
+    <h2 class="reveal reveal-delay-1">It's been a privilege.</h2>
+    <p class="lead reveal reveal-delay-2">
+      Every project, every challenge, and every conversation over this time has taught me
+      something I'll carry forward. I'm grateful for the trust, the collaboration, and the
+      countless small moments that made the work worthwhile.
+    </p>
+    <div class="timeline reveal reveal-delay-3">
+      <div class="timeline-item">
+        <div class="dot"></div>
+        <h3>Where it began</h3>
+        <p>Stepped in eager to learn, contribute, and figure out where I could add real value.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="dot"></div>
+        <h3>Along the way</h3>
+        <p>Took on harder problems, made mistakes worth learning from, and grew because of them.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="dot"></div>
+        <h3>Right now</h3>
+        <p>Closing this chapter with a full heart and a clear head, ready for what's next.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="gratitude">
+  <div class="container">
+    <div class="kicker reveal">Gratitude</div>
+    <h2 class="reveal reveal-delay-1">Thank you.</h2>
+    <p class="reveal reveal-delay-2">
+      To everyone who shared ideas, offered guidance, or simply made the day-to-day a little
+      better — thank you. This isn't a goodbye to the relationships built along the way, only
+      to a role. I'm walking away with genuine appreciation for the time spent here.
+    </p>
+    <div class="quote-card reveal reveal-delay-3">
+      <p>"Every ending is a quiet invitation to begin again — a little wiser, a little braver."</p>
+    </div>
+  </div>
+</section>
+
+<section id="handover">
+  <div class="container">
+    <div class="kicker reveal">Before I close the laptop</div>
+    <h2 class="reveal reveal-delay-1">Handover, tidied up.</h2>
+    <ul class="checklist reveal reveal-delay-2">
+      <li>Documentation and notes left in good shape for whoever picks things up next.</li>
+      <li>Open items flagged and handed off with context.</li>
+      <li>Access and equipment returned as required.</li>
+      <li>Always reachable for a proper handover conversation.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="connect">
+  <div class="container">
+    <div class="kicker reveal">Stay in touch</div>
+    <h2 class="reveal reveal-delay-1">Let's keep the connection.</h2>
+    <p class="lead reveal reveal-delay-2">
+      This is where a role ends, not where the relationships do. Feel free to reach out —
+      I'd genuinely like to stay in touch.
+    </p>
+    <div class="connect reveal reveal-delay-3">
+      <a href="https://linkedin.com/in/adarshbabuk" target="_blank" rel="noopener">💼 LinkedIn</a>
+      <a href="https://adarshbabuk.github.io/portfolio/" target="_blank" rel="noopener">🌐 Portfolio</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="signoff">Thank you, and see you around <span class="wave">👋</span></div>
+    <div>Signing off — with gratitude, not goodbye.</div>
+  </div>
+</footer>
+
+<button class="to-top" id="toTop" aria-label="Back to top">↑</button>
+
+<script>
+  const root = document.documentElement;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isFinePointer = window.matchMedia('(pointer: fine)').matches;
+
+  // scroll progress bar
+  const progressBar = document.getElementById('progressBar');
+  function updateProgress(){
+    const h = document.documentElement;
+    const scrolled = h.scrollTop;
+    const height = h.scrollHeight - h.clientHeight;
+    const pct = height > 0 ? (scrolled / height) * 100 : 0;
+    progressBar.style.width = pct + '%';
+  }
+  document.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+
+  // cursor glow (desktop only)
+  const glow = document.getElementById('cursorGlow');
+  if(isFinePointer){
+    document.addEventListener('mousemove', (e) => {
+      glow.style.opacity = '1';
+      glow.style.left = e.clientX + 'px';
+      glow.style.top = e.clientY + 'px';
+    });
+    document.addEventListener('mouseleave', () => { glow.style.opacity = '0'; });
+  }
+
+  // scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        entry.target.classList.add('in-view');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => io.observe(el));
+
+  // split section headings into words for a staggered scroll reveal
+  function splitWords(el){
+    const text = el.textContent;
+    el.setAttribute('aria-label', text);
+    el.innerHTML = '';
+    text.split(/(\s+)/).forEach((chunk, i) => {
+      if(chunk.trim() === ''){
+        el.appendChild(document.createTextNode(chunk));
+        return;
+      }
+      const span = document.createElement('span');
+      span.className = 'word';
+      span.style.setProperty('--i', i);
+      span.textContent = chunk;
+      span.setAttribute('aria-hidden', 'true');
+      el.appendChild(span);
+    });
+  }
+  document.querySelectorAll('section h2').forEach(splitWords);
+
+  // 3D tilt on cards (desktop only)
+  function enableTilt(el, max){
+    el.addEventListener('mousemove', (e) => {
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top) / r.height;
+      const ry = (px - 0.5) * max * 2;
+      const rx = (0.5 - py) * max * 2;
+      el.style.transform = `perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+    });
+    el.addEventListener('mouseleave', () => { el.style.transform = ''; });
+  }
+  if(isFinePointer && !reduceMotion){
+    document.querySelectorAll('.quote-card').forEach(el => enableTilt(el, 6));
+    document.querySelectorAll('.timeline-item').forEach(el => enableTilt(el, 4));
+  }
+
+  // magnetic pull on the connect button (desktop only)
+  if(isFinePointer && !reduceMotion){
+    document.querySelectorAll('.connect a').forEach(el => {
+      const radius = 70, strength = 0.35;
+      document.addEventListener('mousemove', (e) => {
+        const r = el.getBoundingClientRect();
+        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        const dx = e.clientX - cx, dy = e.clientY - cy;
+        const dist = Math.hypot(dx, dy);
+        if(dist < radius){
+          el.style.setProperty('--mx', (dx * strength) + 'px');
+          el.style.setProperty('--my', (dy * strength) + 'px');
+        } else {
+          el.style.setProperty('--mx', '0px');
+          el.style.setProperty('--my', '0px');
+        }
+      }, { passive: true });
+    });
+  }
+
+  // floating particles in hero
+  const particlesEl = document.getElementById('particles');
+  const particleCount = 18;
+  for(let i = 0; i < particleCount; i++){
+    const p = document.createElement('span');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDuration = (10 + Math.random() * 10) + 's';
+    p.style.animationDelay = (Math.random() * 12) + 's';
+    p.style.width = p.style.height = (3 + Math.random() * 4) + 'px';
+    particlesEl.appendChild(p);
+  }
+
+  // back to top button
+  const toTop = document.getElementById('toTop');
+  document.addEventListener('scroll', () => {
+    toTop.classList.toggle('visible', document.documentElement.scrollTop > window.innerHeight * 0.6);
+  }, { passive: true });
+  toTop.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // side dots nav active state
+  const sections = ['hero','looking-back','gratitude','handover','connect'].map(id => document.getElementById(id));
+  const dots = document.querySelectorAll('.dots-nav a');
+  const navIo = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        const idx = sections.indexOf(entry.target);
+        dots.forEach(d => d.classList.remove('active'));
+        if(dots[idx]) dots[idx].classList.add('active');
+      }
+    });
+  }, { threshold: 0.5 });
+  sections.forEach(s => s && navIo.observe(s));
+
+  // living aurora background
+  const auroraCanvas = document.getElementById('aurora');
+  const actx = auroraCanvas.getContext('2d');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  function resizeAurora(){
+    auroraCanvas.width = window.innerWidth * dpr;
+    auroraCanvas.height = window.innerHeight * dpr;
+    auroraCanvas.style.width = window.innerWidth + 'px';
+    auroraCanvas.style.height = window.innerHeight + 'px';
+    actx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resizeAurora();
+  window.addEventListener('resize', resizeAurora);
+
+  const auroraBlobs = [
+    { xr: 0.75, yr: 0.18, rr: 0.34, colorVar: '--accent',   speed: 0.00018, phase: 0 },
+    { xr: 0.15, yr: 0.75, rr: 0.30, colorVar: '--accent-2', speed: 0.00014, phase: 2.1 },
+    { xr: 0.55, yr: 0.48, rr: 0.20, colorVar: '--accent-3', speed: 0.00022, phase: 4.2 },
+  ];
+
+  let lastDraw = 0;
+  function drawAuroraFrame(ts){
+    if(ts - lastDraw < 33) return;
+    lastDraw = ts;
+    const w = window.innerWidth, h = window.innerHeight;
+    actx.clearRect(0, 0, w, h);
+    const styles = getComputedStyle(root);
+    auroraBlobs.forEach(b => {
+      const t = ts * b.speed + b.phase;
+      const cx = (b.xr + Math.sin(t) * 0.06) * w;
+      const cy = (b.yr + Math.cos(t * 0.8) * 0.06) * h;
+      const r = b.rr * Math.max(w, h);
+      actx.globalAlpha = 0.4;
+      actx.fillStyle = styles.getPropertyValue(b.colorVar).trim() || '#7dd3c0';
+      actx.beginPath();
+      actx.arc(cx, cy, r, 0, Math.PI * 2);
+      actx.fill();
+    });
+    actx.globalAlpha = 1;
+  }
+
+  function auroraLoop(ts){
+    drawAuroraFrame(ts);
+    if(!document.hidden){ requestAnimationFrame(auroraLoop); }
+  }
+
+  if(reduceMotion){
+    drawAuroraFrame(performance.now());
+  } else {
+    requestAnimationFrame(auroraLoop);
+    document.addEventListener('visibilitychange', () => {
+      if(!document.hidden){ requestAnimationFrame(auroraLoop); }
+    });
+  }
+
+  // subtle scroll parallax on the aurora layer
+  if(!reduceMotion){
+    let lastScrollY = window.scrollY;
+    window.addEventListener('scroll', () => { lastScrollY = window.scrollY; }, { passive: true });
+    function parallaxLoop(){
+      auroraCanvas.style.transform = `translateY(${lastScrollY * 0.06}px)`;
+      requestAnimationFrame(parallaxLoop);
+    }
+    requestAnimationFrame(parallaxLoop);
+  }
+</script>
+
+</body>
+</html>
